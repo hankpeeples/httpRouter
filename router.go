@@ -30,7 +30,13 @@ func (rtr *Router) Route(method, path string, handlerFunc http.HandlerFunc) {
 		Handler: handlerFunc,
 	}
 	rtr.routes = append(rtr.routes, e)
-	fmt.Println("routes: ", rtr.routes)
+}
+
+func (rtr *Router) PrintRoutes() {
+	fmt.Println("Listening for:")
+	for i, route := range rtr.routes {
+		fmt.Printf("[%d] %s request on path '%s'\n", i, route.Method, route.Path)
+	}
 }
 
 // Match returns whether a match was found or not.
