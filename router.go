@@ -47,6 +47,18 @@ func (re *RouteEntry) Match(r *http.Request) bool {
 }
 
 func (rtr *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	// return 404 for every request, for now
+	// Loop over all routes and check to see if one of them matches
+	for _, e := range rtr.routes {
+		match := e.Match(r)
+		if !match {
+			continue
+		}
+
+		// Match found, call handler and return
+		e.Handler.ServeHTTP(w, r)
+		return
+	}
+
+	// No matches found, 404
 	http.NotFound(w, r)
 }
