@@ -10,8 +10,25 @@ func main() {
 
 	fmt.Println("Server running on :8000")
 
+	r.Route("GET", "/", func(w http.ResponseWriter, r *http.Request) {
+		routeOutput("Router is working!", w, r)
+	})
+
+	r.Route("GET", "/hello", func(w http.ResponseWriter, r *http.Request) {
+		routeOutput("Hello!", w, r)
+	})
+
+	r.PrintRoutes()
+
 	err := http.ListenAndServe(":8000", r)
 	if err != nil {
 		fmt.Println("Error serving server: ", err)
+	}
+}
+
+func routeOutput(output string, w http.ResponseWriter, r *http.Request) {
+	_, err := w.Write([]byte(output))
+	if err != nil {
+		fmt.Println("Error writing response: ", err)
 	}
 }
