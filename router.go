@@ -33,6 +33,19 @@ func (rtr *Router) Route(method, path string, handlerFunc http.HandlerFunc) {
 	fmt.Println("routes: ", rtr.routes)
 }
 
+// Match returns whether a match was found or not.
+func (re *RouteEntry) Match(r *http.Request) bool {
+	if r.Method != re.Method {
+		return false // Method mismatch
+	}
+
+	if r.URL.Path != re.Path {
+		return false // Path mismatch
+	}
+
+	return true
+}
+
 func (rtr *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// return 404 for every request, for now
 	http.NotFound(w, r)
