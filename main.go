@@ -14,8 +14,9 @@ func main() {
 		routeOutput("Router is working!", w, r)
 	})
 
-	r.Route("GET", "/hello", func(w http.ResponseWriter, r *http.Request) {
-		routeOutput("Hello!", w, r)
+	r.Route("GET", `/hello/(?P<Message>\w+)`, func(w http.ResponseWriter, r *http.Request) {
+		message := URLParam(r, "Message")
+		routeOutput(fmt.Sprintf("Hello, %s", message), w, r)
 	})
 
 	r.PrintRoutes()

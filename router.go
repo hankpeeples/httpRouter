@@ -11,6 +11,7 @@ import (
 	"net/http"
 )
 
+// Router holds all routes
 type Router struct {
 	routes []RouteEntry
 }
@@ -32,6 +33,7 @@ func (rtr *Router) Route(method, path string, handlerFunc http.HandlerFunc) {
 	rtr.routes = append(rtr.routes, e)
 }
 
+// PrintRoutes simply prints the routes that are being listened for
 func (rtr *Router) PrintRoutes() {
 	fmt.Println("Listening for:")
 	for i, route := range rtr.routes {
@@ -67,4 +69,13 @@ func (rtr *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// No matches found, 404
 	http.NotFound(w, r)
+}
+
+// URLParam extracts a parameter from the URL by name
+func URLParam(r *http.Request, name string) string {
+	ctx := r.Context()
+
+	// Cast `interface{}` from ctx.Value() to map used to store params
+	params := ctx.Value("params").(map[string]string)
+	return params[name]
 }
