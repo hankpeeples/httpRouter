@@ -64,6 +64,14 @@ func (ent *RouteEntry) Match(r *http.Request) map[string]string {
 }
 
 func (rtr *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// Handle router panic
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Printf("ERROR: %v\n", r)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		}
+	}()
+
 	// Loop over all routes and check to see if one of them matches
 	for _, e := range rtr.routes {
 		params := e.Match(r)
