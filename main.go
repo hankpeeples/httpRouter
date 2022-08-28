@@ -10,11 +10,11 @@ func main() {
 
 	fmt.Println("Server running on :8000")
 
-	r.Route("GET", "/", func(w http.ResponseWriter, r *http.Request) {
+	r.Route(http.MethodGet, `/`, func(w http.ResponseWriter, r *http.Request) {
 		routeOutput("Router is working!", w, r)
 	})
 
-	r.Route("GET", `/hello/(?P<Message>\w+)`, func(w http.ResponseWriter, r *http.Request) {
+	r.Route(http.MethodGet, `/hello/(?P<Message>\w+)`, func(w http.ResponseWriter, r *http.Request) {
 		message := URLParam(r, "Message")
 		routeOutput(fmt.Sprintf("Hello, %s", message), w, r)
 	})

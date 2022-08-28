@@ -7,8 +7,10 @@ package main
 // 	4. Return a 404 if no match is found
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"regexp"
 )
 
 // Router holds all routes
@@ -18,16 +20,18 @@ type Router struct {
 
 // RouteEntry stores relevant information for each route
 type RouteEntry struct {
-	Path    string
+	Path    *regexp.Regexp
 	Method  string
 	Handler http.HandlerFunc
 }
 
 // Route is a helper function that creates a new RouteEntry and add it to the list of routes
 func (rtr *Router) Route(method, path string, handlerFunc http.HandlerFunc) {
+	exactPath := regexp.MustCompile("^" + path + "$")
+
 	e := RouteEntry{
 		Method:  method,
-		Path:    path,
+		Path:    exactPath,
 		Handler: handlerFunc,
 	}
 	rtr.routes = append(rtr.routes, e)
@@ -42,28 +46,34 @@ func (rtr *Router) PrintRoutes() {
 }
 
 // Match returns whether a match was found or not.
-func (re *RouteEntry) Match(r *http.Request) bool {
-	if r.Method != re.Method {
-		return false // Method mismatch
+func (ent *RouteEntry) Match(r *http.Request) map[string]string {
+	match := ent.Path.FindStringSubmatch(r.URL.Path)
+	if match == nil {
+		// no match
+		return nil
 	}
 
-	if r.URL.Path != re.Path {
-		return false // Path mismatch
+	// Create map to store URL parameters
+	params := make(map[string]string)
+	groupNames := ent.Path.SubexpNames()
+	for i, group := range match {
+		params[groupNames[i]] = group
 	}
 
-	return true
+	return params
 }
 
 func (rtr *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Loop over all routes and check to see if one of them matches
 	for _, e := range rtr.routes {
-		match := e.Match(r)
-		if !match {
-			continue
+		params := e.Match(r)
+		if params == nil {
+			continue // no match found
 		}
 
-		// Match found, call handler and return
-		e.Handler.ServeHTTP(w, r)
+		// Create new request with params stored in context
+		ctx := context.WithValue(r.Context(), "params", params)
+		e.Handler.ServeHTTP(w, r.WithContext(ctx))
 		return
 	}
 
